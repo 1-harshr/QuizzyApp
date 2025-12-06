@@ -9,7 +9,7 @@ data class StudentHomePageDto(
         val studentHomePageDto = StudentHomePageDto(
             student = Student(
                 name = "Gaurav",
-                `class` = "10th Class",
+                studentClass = "10th Class",
                 availability = Availability(
                     status = Availability.AvailabilityStatus.PRESENT
                 ),
@@ -85,7 +85,7 @@ data class StudentHomePageDto(
 
 data class Student(
     val name: String,
-    val `class`: String,
+    val studentClass: String,
     val availability: Availability,
     val quiz: Quiz,
     val accuracy: Accuracy
