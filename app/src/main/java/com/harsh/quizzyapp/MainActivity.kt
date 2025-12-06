@@ -5,14 +5,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.harsh.quizzyapp.ui.homepage.HomePageComposable
-import com.harsh.quizzyapp.ui.loginscreen.LoginScreenComposable
+import androidx.navigation.compose.rememberNavController
+import com.harsh.quizzyapp.ui.navigation.NavGraph
 import com.harsh.quizzyapp.ui.theme.QuizzyAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -21,26 +17,11 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             QuizzyAppTheme {
-                Scaffold( modifier = Modifier.fillMaxSize() ) { innerPadding ->
-                    LoginScreenComposable()
+                val navController = rememberNavController()
+                Scaffold(modifier = Modifier.fillMaxSize()) {
+                    NavGraph(navController = navController)
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    QuizzyAppTheme {
-        Greeting("Android")
     }
 }

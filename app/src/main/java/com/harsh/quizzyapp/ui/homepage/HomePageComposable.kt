@@ -1,7 +1,6 @@
 package com.harsh.quizzyapp.ui.homepage
 
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -12,6 +11,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -24,13 +24,15 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,12 +40,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.harsh.quizzyapp.R
+import com.harsh.quizzyapp.common.DataWrapper
 import com.harsh.quizzyapp.data.model.Accuracy
 import com.harsh.quizzyapp.data.model.Availability
 import com.harsh.quizzyapp.data.model.OverallAccuracy
@@ -53,14 +54,41 @@ import com.harsh.quizzyapp.data.model.QuizStreak
 import com.harsh.quizzyapp.data.model.StudentHomePageDto
 import com.harsh.quizzyapp.data.model.TodaySummary
 import com.harsh.quizzyapp.data.model.WeeklyOverview
+import com.harsh.quizzyapp.ui.viewmodel.HomePageViewModel
 
 
-@Preview(showBackground = true)
 @Composable
 fun HomePageComposable(
-    data: StudentHomePageDto = StudentHomePageDto.studentHomePageDto
+    viewModel: HomePageViewModel
 ) {
+    val homePageData by viewModel.homePageData.collectAsState()
 
+    when (val state = homePageData) {
+        is DataWrapper.Loading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+        is DataWrapper.Error -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "Error: ${state.throwable.message}")
+            }
+        }
+        is DataWrapper.Success -> {
+            val data = state.data
+            LogInScreen(data)
+        }
+    }
+}
+
+@Composable
+private fun LogInScreen(data: StudentHomePageDto) {
     Scaffold(
         modifier = Modifier
             .fillMaxWidth()
@@ -102,7 +130,6 @@ fun HomePageComposable(
         }
 
     }
-
 }
 
 @Composable
@@ -225,14 +252,18 @@ fun TodaySummaryWidget(
             modifier = Modifier.padding(bottom = 12.dp)
         )
         Card(
-            modifier = Modifier.fillMaxWidth().border(1.dp, Color(153, 110, 181), RoundedCornerShape(16.dp)),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, Color(153, 110, 181), RoundedCornerShape(16.dp)),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = Color(252, 247, 255, 1))
         ) {
             Spacer(Modifier.padding(10.dp))
 
             Column(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -260,7 +291,9 @@ fun TodaySummaryWidget(
                     containerColor = Color.Black
                 ),
                 shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.fillMaxWidth().padding(16.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_play),
@@ -293,7 +326,10 @@ fun WeeklyOverviewWidget(
             modifier = Modifier.padding(bottom = 12.dp)
         )
         Card(
-            modifier = Modifier.fillMaxWidth().border(1.dp, Color(123, 127, 134), RoundedCornerShape(16.dp)).padding(20.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, Color(123, 127, 134), RoundedCornerShape(16.dp))
+                .padding(20.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = Color.Transparent)
         ) {

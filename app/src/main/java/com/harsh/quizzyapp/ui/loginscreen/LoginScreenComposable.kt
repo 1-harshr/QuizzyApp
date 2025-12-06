@@ -17,14 +17,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,14 +34,29 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.harsh.quizzyapp.common.DataWrapper
 import com.harsh.quizzyapp.R
+import com.harsh.quizzyapp.ui.viewmodel.LoginViewModel
 
-@Preview(showBackground = true)
 @Composable
-fun LoginScreenComposable() {
+fun LoginScreenComposable(
+    viewModel: LoginViewModel,
+    onLoginSuccess: () -> Unit
+) {
+    val schoolId by viewModel.schoolId.collectAsState()
+    val studentId by viewModel.studentId.collectAsState()
+    val loginState by viewModel.loginState.collectAsState()
+
+    LaunchedEffect(loginState) {
+        if (loginState is DataWrapper.Success) {
+            onLoginSuccess()
+        }
+    }
+
+    val isLoading = loginState is DataWrapper.Loading
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -49,15 +66,28 @@ fun LoginScreenComposable() {
             modifier = Modifier.matchParentSize()
         )
 
-        LoginBottomSheet()
+        LoginBottomSheet(
+            schoolId = schoolId,
+            studentId = studentId,
+            isLoading = isLoading,
+            errorMessage = (loginState as? DataWrapper.Error)?.throwable?.message,
+            onSchoolIdChange = { viewModel.updateSchoolId(it) },
+            onStudentIdChange = { viewModel.updateStudentId(it) },
+            onLoginClick = { viewModel.login(onLoginSuccess) }
+        )
     }
 }
 
 @Composable
-private fun BoxScope.LoginBottomSheet() {
-    var schoolId by remember { mutableStateOf("") }
-    var studentId by remember { mutableStateOf("") }
-
+private fun BoxScope.LoginBottomSheet(
+    schoolId: String,
+    studentId: String,
+    isLoading: Boolean,
+    errorMessage: String?,
+    onSchoolIdChange: (String) -> Unit,
+    onStudentIdChange: (String) -> Unit,
+    onLoginClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .align(Alignment.BottomEnd)
@@ -83,7 +113,7 @@ private fun BoxScope.LoginBottomSheet() {
 
             OutlinedTextField(
                 value = schoolId,
-                onValueChange = { schoolId = it },
+                onValueChange = onSchoolIdChange,
                 placeholder = {
                     Text(
                         text = "Student Name",
@@ -108,7 +138,7 @@ private fun BoxScope.LoginBottomSheet() {
 
             OutlinedTextField(
                 value = studentId,
-                onValueChange = { studentId = it },
+                onValueChange = onStudentIdChange,
                 placeholder = {
                     Text(
                         text = "Student Name",
@@ -130,6 +160,43 @@ private fun BoxScope.LoginBottomSheet() {
                 )
             )
 
+            Spacer(Modifier.height(16.dp))
+
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage,
+                    fontSize = 12.sp,
+                    color = Color(0xFFE91E63),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+
+            Button(
+                onClick = onLoginClick,
+                enabled = !isLoading,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp)),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Black
+                )
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        color = Color.White
+                    )
+                } else {
+                    Text(
+                        text = "Sign In",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+            }
 
         }
     }
